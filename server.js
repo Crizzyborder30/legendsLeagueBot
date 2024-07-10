@@ -130,7 +130,7 @@ async function eachDay() {
 }
 
 // Planlegge at funksjonen skal kjøre klokken 07:01 hver dag
-cron.schedule('1 7 * * *', () => {
+cron.schedule('20 12 * * *', () => {
     console.log('Running the scheduled task at 07:01');
     eachDay();
 });
