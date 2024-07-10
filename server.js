@@ -1,7 +1,7 @@
 import express from 'express';
 import fetch from 'node-fetch';
 import cors from 'cors';
-import fs from 'fs/promises'; // Asynkrone filsystem operasjoner
+import fs from 'fs/promises'; 
 import cron from 'node-cron';
 import dotenv from 'dotenv';
 import { type } from 'os';
@@ -14,10 +14,9 @@ app.use(cors());
 app.use(express.static('public'));
 
 const apiKey = process.env.apiToken;
-const playerTag = '9V2QJ9LOP'; // uten #
+const playerTag = '9V2QJ9LOP'; 
 
-const dataFilePath = 'trophyData.json'; // Fil for å lagre data
-
+const dataFilePath = 'trophyData.json';
 
 //collects and saves the trophies as soon as the server starts running, but keeps the stats the same
 const data = await fetchData();
@@ -27,13 +26,12 @@ const newData = {oldTrophies: oldTrophies, stats: savedData.stats};
 await writeData(newData);
 
 
-// Hjelpefunksjon for å lese data fra fil
+// helper function to read data from the json file
 async function readData() {
     try {
         const data = await fs.readFile(dataFilePath, 'utf8');
         return JSON.parse(data);
     } catch (error) {
-        // Hvis filen ikke finnes, returner null
         if (error.code === 'ENOENT') {
             return null;
         } else {
@@ -42,7 +40,7 @@ async function readData() {
     }
 }
 
-// Hjelpefunksjon for å skrive data til fil
+// helper function to write data to the json file
 async function writeData(data) {
     try {
         console.log(`Writing data to ${dataFilePath}`);
@@ -54,10 +52,9 @@ async function writeData(data) {
 }
 
 
-//henter data fra apiet og returnerer hele data-objektet
+// gets data from the api
 async function fetchData() {
     const url = `https://api.clashofclans.com/v1/players/%23${playerTag}`;
-    
     try {
         const response = await fetch(url, {
             method: 'GET',
@@ -66,11 +63,9 @@ async function fetchData() {
                 'Content-Type': 'application/json'
             }
         });
-
         if (!response.ok) {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
-
         const data = await response.json();
         return data;
     } catch (error) {
@@ -88,31 +83,24 @@ function getCurrentMonth() {
     return `${year}-${month}`;
 }
 
-//runs 07:01 every day
+//runs 07:01 every day, since a new legens day starts at 07:00
 //checks if a new season has begun, and then adds a new month-object in the json array
 //also adds a new day object in the allStats array
 async function eachDay() {
-
-    //new updated data
     const data = await fetchData();
 
     //old season id. used to check if a new month-object should be created
     const season = data.legendStatistics.previousSeason.id; //"2024-06"
     const currentMonth = getCurrentMonth(); //"2024-06"
-
-    //at the start: none, after a while on the form: { trophies: "1234", stats: [{month: june, allStats: [ {attacks: [], defences: [] } ] } ]}
-    const savedData = await readData() || {};
+    const savedData = await readData();
 
     //checks whether an object for this season already exists in the json file
-    //most of the time it will be true
-    let monthData = savedData.stats.find(month => month.month === currentMonth); //in case of a new season: false or null
+    //will be true most of the time
+    let monthData = savedData.stats.find(month => month.month === currentMonth); //in case a new season has started: false or null
 
     //when there is a new season, this if-block will run
-    //if this seasons object doesnt already exist, and the current month is equal to the last season id -> run the code
     if(!monthData && season === currentMonth){
-       
-        //if a new season has begun, a new month/season object must be created. it should be the first in the json-array, and therefore
-        //have the id = 0 for convenience. 
+        //if a new season has begun, a new month/season object must be created. it should be the first in the json-array, for convenience. 
 
         //the savedData array is expanded
         savedData.stats = [{"month": currentMonth, "allStats": []}, ...savedData.stats];
@@ -132,7 +120,7 @@ async function eachDay() {
 
 }
 
-// Planlegge at funksjonen skal kjøre klokken 07:01 hver dag
+// scedules the function to run at 07:01 every day
 cron.schedule('1 7 * * *', () => {
     console.log('Running the scheduled task at 07:01');
     eachDay();
@@ -144,11 +132,10 @@ async function checkAndLogAttacksAndDefences() {
     const currentDate = new Date();
     console.log(currentDate);
     try{
-        //new updated trophies
         const data = await fetchData();
         const newTrophies = data.trophies; //string
 
-        //by the time this function runs the shell of the json file should already be created, and the trophies been defined
+        //by the time this function runs the eachDay function should already have created a new object for this day
         const savedData = await readData();
         const oldTrophies = savedData.oldTrophies; //string
 
@@ -180,12 +167,12 @@ async function checkAndLogAttacksAndDefences() {
 //makes the function run every two minutes
 setInterval(checkAndLogAttacksAndDefences, 120000);
 
-//frontend-portal to the data-object
+//called to get the data from the coc api
 app.get('/player-data', async (req, res) => {
 
     try {
         const data = await fetchData();
-        res.json(data);  // Send data som JSON
+        res.json(data); 
     } catch (error) {
         console.error('Error in /player-data route:', error.message);
         res.status(500).send('Error: ' + error.message);
@@ -193,7 +180,7 @@ app.get('/player-data', async (req, res) => {
 });
 
 
-//frontend-portal to the data thats saved in the json file
+//called to get the data thats saved in the json file
 app.get('/trophy-data', async (req, res) => {
 
     try {
@@ -206,7 +193,6 @@ app.get('/trophy-data', async (req, res) => {
 
 });
 
-//the main portal to the frontend-code
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
     console.log(`Server running at http://localhost:${port}`);

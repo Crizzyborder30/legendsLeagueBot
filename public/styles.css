@@ -15,10 +15,6 @@ td:first-child{
     background-color: green;
 }
 
-#date{
-    background-color: white;
-}
-
 #allTables{
     display: grid;
     grid-template-columns: repeat(7, 1fr);

@@ -11,12 +11,11 @@ function formatDateToMonthYear(date) {
     return new Intl.DateTimeFormat('en-US', options).format(date);
 }
 
-//runs once the page is loaded, fetches all the data, and displays some basic data on the page
+//runs once the page is loaded, fetches the data from the api, and displays some basic data on the page
 async function displayBasicPlayerData() {
     const currentDate = new Date();
     console.log(currentDate);
     try {
-        console.log("kjørt");
         const response = await fetch(`${window.location.origin}/player-data`);
         if (!response.ok) {
             throw new Error('Not able to get data from the API');
@@ -32,7 +31,7 @@ async function displayBasicPlayerData() {
     }
 }
 
-//gonna run once the page opens aswell, gets the data from the json file by making a call to localhost /trophy-data
+//gonna run once the page opens aswell, gets the data from the json file by making a call to localhost/trophy-data
 //this data will be used to fill in the daily tables
 async function getDataFromJSON() {  
 
@@ -41,7 +40,7 @@ async function getDataFromJSON() {
         if (!response.ok) {
             throw new Error('Not able to get data from JSON');
         }
-        const data = await response.json();  // Konverter respons til JSON
+        const data = await response.json();  
         return data;
 
     } catch (error) {
@@ -49,18 +48,18 @@ async function getDataFromJSON() {
     }
 }
 
-//dropDownmenu. will be used by the getLoggedData function aswell as the event-listener
+//dropDownmenu. Will be used by the getLoggedData function aswell as the event-listener
 const dropDown = document.getElementById("selectMonth");
 
-// Legger til en change-hendelse på drop-down elementet
+// listening for changes in the drop-down element
 dropDown.addEventListener('change', async (event) => {
-    // Henter verdien til det valgte alternativet
+
+    // gets the value of the chosen month
     const selectedValue = event.target.value;
     console.log('Selected month:', selectedValue);
-
-    //kall på en funksjon som lager tabeller med data for hver dag, med måneden som parameter
     const stats = await getDataFromJSON();
-    // Finn objektet i stats arrayen som har en matching month-verdi
+
+    // finds the object in the json-file that has a matching month-value
     const selectedMonthData = stats.find(month => month.month === selectedValue);
 
     //clears the allTables div, to make room for the new data to be displayed
@@ -75,8 +74,6 @@ dropDown.addEventListener('change', async (event) => {
 
 async function createDropdown() {  
         const stats = await getDataFromJSON();  
- 
-        // Tømmer eksisterende alternativer i dropdown
         dropDown.innerHTML = '';
 
         //for each month thats logged, an option in the dropdownmenu is created
@@ -84,25 +81,6 @@ async function createDropdown() {
             dropDown.innerHTML += `<option value=${stat.month}> ${stat.month} </option>`
         })
 }
-
-
-
-
-
-//{date: 07, attacks: [], defences: []}
-const allStats = [
-    {
-        testAttack: [1, 22, 23, 24, 25, 26, 27, 28],
-        testDefence: [30, 20, 40, 14, 40, 32, 30, 23]
-
-    },
-    {
-        testAttack: [2, 22, 23, 24, 25, 26, 27, 28],
-        testDefence: [30, 20, 40, 14, 40, 32, 30, 23]
-
-    }
-
-];
 
 
 //argument looks like this: {date, attacks, defences}
@@ -124,7 +102,6 @@ function createTable(allStats) {
         cell1.textContent = attacks[i];
         cell2.textContent = defences[i];
     }
-
 
     //calculates and displays the sum of attacks and defences
     const row = table.insertRow();
@@ -160,7 +137,7 @@ function createTable(allStats) {
     }
 }
 
-//argument looks like this: [ {data, attacks, defences}, {date,attacks, defences}, {data, attacks, defences}]
+//argument is an array with objects
 function createAllTables(allStats) {
     allStats.forEach(stats => {
         createTable(stats);
