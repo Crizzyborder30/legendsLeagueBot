@@ -25,9 +25,6 @@ const savedData = await readData();
 const newData = {oldTrophies: oldTrophies, stats: savedData.stats};
 await writeData(newData);
 
-// runs keep-alive funkction avery 14. minutes (840000 ms)
-setInterval(keepAlive, 840000);
-
 // helper function to read data from the json file
 async function readData() {
     try {
