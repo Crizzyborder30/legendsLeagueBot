@@ -44,7 +44,9 @@ async function readData() {
 // Hjelpefunksjon for å skrive data til fil
 async function writeData(data) {
     try {
+        console.log(`Writing data to ${dataFilePath}`);
         await fs.writeFile(dataFilePath, JSON.stringify(data), 'utf8');
+        console.log('Data successfully written to file');
     } catch (error) {
         console.error('Error writing data to file:', error);
     }
