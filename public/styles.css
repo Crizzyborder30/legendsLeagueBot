@@ -1,0 +1,28 @@
+table{
+    border-collapse: collapse;
+    border: 2px solid black;
+}
+td{
+    border: 2px solid black;
+    padding: 5px;
+    text-align: center;
+    min-width: 50px;
+    height: 20px;
+    background-color: red;
+}
+
+td:first-child{
+    background-color: green;
+}
+
+#date{
+    background-color: white;
+}
+
+#allTables{
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 15px;
+}
+
+
