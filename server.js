@@ -25,22 +25,6 @@ const savedData = await readData();
 const newData = {oldTrophies: oldTrophies, stats: savedData.stats};
 await writeData(newData);
 
-// Keep-alive function to prevent the server from falling asleep after 15 minutes
-async function keepAlive() {
-    const port = process.env.PORT || 3000;
-    const url = `http://localhost:${port}`; 
-
-    try {
-        const response = await fetch(url);
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        console.log('Server keep-alive successful');
-    } catch (error) {
-        console.error('Error in keep-alive request:', error.message);
-    }
-}
-
 // runs keep-alive funkction avery 14. minutes (840000 ms)
 setInterval(keepAlive, 840000);
 
