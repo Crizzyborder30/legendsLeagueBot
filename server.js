@@ -4,6 +4,7 @@ import cors from 'cors';
 import fs from 'fs/promises'; // Asynkrone filsystem operasjoner
 import cron from 'node-cron';
 import dotenv from 'dotenv';
+import { type } from 'os';
 
 dotenv.config();
 
@@ -140,6 +141,8 @@ cron.schedule('1 7 * * *', () => {
 
 //code that runs every 2 minutes 
 async function checkAndLogAttacksAndDefences() {
+    const currentDate = new Date();
+    console.log(currentDate);
     try{
         //new updated trophies
         const data = await fetchData();
@@ -148,20 +151,25 @@ async function checkAndLogAttacksAndDefences() {
         //by the time this function runs the shell of the json file should already be created, and the trophies been defined
         const savedData = await readData();
         const oldTrophies = savedData.oldTrophies; //string
+        console.log("old trophies: " + oldTrophies + " " + typeof (oldTrophies));
+        console.log("new trophies: " + newTrophies + " " + typeof (newTrophies));
 
         if(oldTrophies !== newTrophies){
-
+            
             const difference = newTrophies - oldTrophies; //will be positive for attacks and negative for defences
             savedData.oldTrophies = newTrophies;
+            console.log("trying to update oldtrophies");
             await writeData(savedData);
             //if the difference is positive, the player has attcked and the positive difference is pushed in the back of the list of attacks
             if(difference > 0){
                 savedData.stats[0].allStats[0].attacks = [...savedData.stats[0].allStats[0].attacks, difference];
+                console.log("trying to push difference to attack");
                 await writeData(savedData);
             }
             //if the difference is negative, the player has recieved a defence and the negative difference is pushed in the back of the list of defences
             if(difference < 0) {
                 savedData.stats[0].allStats[0].defences = [...savedData.stats[0].allStats[0].defences, difference];
+                console.log("trying to push difference to defence");
                 await writeData(savedData);
             }
         }
