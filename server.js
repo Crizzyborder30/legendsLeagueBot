@@ -5,7 +5,6 @@ import fs from 'fs/promises';
 import cron from 'node-cron';
 import dotenv from 'dotenv';
 import { type } from 'os';
-const fs = require('fs');
 const path = require('path');
 const { exec } = require('child_process');
 
