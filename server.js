@@ -8,6 +8,24 @@ import { type } from 'os';
 import path from 'path';
 import { exec } from 'child_process';
 
+
+// Funksjon for å sjekke Git-versjon
+const checkGitVersion = () => {
+    exec('git --version', (error, stdout, stderr) => {
+        if (error) {
+            console.error(`Git is not installed or not found in PATH: ${stderr}`);
+            process.exit(1); // Avslutt med feilkode
+        } else {
+            console.log(`Git version: ${stdout}`);
+            process.exit(0); // Avslutt med suksesskode
+        }
+    });
+};
+
+// Kjør sjekkfunksjonen ved oppstart
+checkGitVersion();
+
+
 const dataFilePath = 'trophyData.json';
 
 // Function to commit and push changes
