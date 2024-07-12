@@ -5,6 +5,44 @@ import fs from 'fs/promises';
 import cron from 'node-cron';
 import dotenv from 'dotenv';
 import { type } from 'os';
+const fs = require('fs');
+const path = require('path');
+const { exec } = require('child_process');
+
+const dataFilePath = 'trophyData.json';
+
+// Function to commit and push changes
+const commitAndPush = () => {
+    // Change to the repository directory
+    const repoPath = path.join(__dirname, 'Crizzyborder30/legendsLeagueBot');
+    process.chdir(repoPath);
+
+    // Add the JSON file to git
+    exec(`git add ${dataFilePath}`, (err, stdout, stderr) => {
+        if (err) {
+            console.error('Error adding the file:', err);
+            return;
+        }
+
+        // Commit the changes
+        exec('git commit -m "Automated update of JSON file"', (err, stdout, stderr) => {
+            if (err) {
+                console.error('Error committing the changes:', err);
+                return;
+            }
+
+            // Push the changes to GitHub
+            exec('git push origin main', (err, stdout, stderr) => {
+                if (err) {
+                    console.error('Error pushing the changes:', err);
+                    return;
+                }
+                console.log('Changes have been pushed to GitHub.');
+            });
+        });
+    });
+};
+
 
 dotenv.config();
 
@@ -16,7 +54,7 @@ app.use(express.static('public'));
 const apiKey = process.env.apiToken;
 const playerTag = '9V2QJ9LOP'; 
 
-const dataFilePath = 'trophyData.json';
+
 
 //collects and saves the trophies as soon as the server starts running, but keeps the stats the same
 const data = await fetchData();
@@ -116,6 +154,7 @@ async function eachDay() {
     //adding the new day-object at the start of the allStats array
     savedData.stats[0].allStats = [{date: day, attacks: [], defences: []}, ...savedData.stats[0].allStats];
     await writeData(savedData);
+    commitAndPush();
 
 }
 
@@ -154,6 +193,7 @@ async function checkAndLogAttacksAndDefences() {
                 savedData.stats[0].allStats[0].defences = [...savedData.stats[0].allStats[0].defences, difference];
                 console.log(`adding ${difference} to defence`);
                 await writeData(savedData);
+                commitAndPush();
             }
         } else {
             console.log("no difference in trophies detected");

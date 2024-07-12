@@ -4,7 +4,9 @@
   "main": "server.js",
   "type": "module",
   "scripts": {
-    "start": "node server.js"
+    "start": "node server.js",
+    "check-git": "node checkGit.js",
+    "update": "node updateAndPush.js"
   },
   "dependencies": {
     "cors": "^2.8.5",
