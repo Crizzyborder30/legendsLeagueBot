@@ -5,8 +5,8 @@ import fs from 'fs/promises';
 import cron from 'node-cron';
 import dotenv from 'dotenv';
 import { type } from 'os';
-const path = require('path');
-const { exec } = require('child_process');
+import path from 'path';
+import { exec } from 'child_process';
 
 const dataFilePath = 'trophyData.json';
 
