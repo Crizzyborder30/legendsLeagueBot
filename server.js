@@ -10,7 +10,7 @@ import { exec } from 'child_process';
 
 const dataFilePath = 'trophyData.json';
 
-// Function to commit and push changes
+/* Function to commit and push changes
 const commitAndPush = () => {
     // Change to the repository directory
     const repoPath = path.join(process.cwd(), 'Crizzyborder30/legendsLeagueBot');
@@ -40,7 +40,7 @@ const commitAndPush = () => {
             });
         });
     });
-};
+};*/
 
 
 dotenv.config();
@@ -61,7 +61,9 @@ let oldTrophies = data.trophies;
 const savedData = await readData();
 const newData = {oldTrophies: oldTrophies, stats: savedData.stats};
 await writeData(newData);
-commitAndPush();
+console.log('Current working directory:', process.cwd());
+
+//commitAndPush();
 
 // helper function to read data from the json file
 async function readData() {
