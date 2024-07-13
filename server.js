@@ -1,49 +1,68 @@
 import express from 'express';
 import fetch from 'node-fetch';
 import cors from 'cors';
-import fs from 'fs/promises'; 
+import fs from 'fs/promises';
 import cron from 'node-cron';
 import dotenv from 'dotenv';
 import { type } from 'os';
 import path from 'path';
 import { exec } from 'child_process';
+import axios from 'axios';
+import fs from 'fs';
+
+// GitHub repo detaljer
+const GITHUB_REPO = 'Crizzyborder30/legendsLeagueBot';
+const GITHUB_TOKEN = process.env.gitToken;
+//const FILE_PATH = 'path/to/your/datafile.json';
+const BRANCH = 'main';
 
 const dataFilePath = 'trophyData.json';
 
+// Funksjon for å oppdatere filen på GitHub
+const updateGithubFile = async () => {
+    const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${dataFilePath}`;
+    const headers = {
+        'Authorization': `token ${GITHUB_TOKEN}`,
+        'Accept': 'application/vnd.github.v3+json',
+    };
 
-
-// Function to commit and push changes
-const commitAndPush = () => {
-    // Change to the repository directory
-    const repoPath = 'https://github.com/Crizzyborder30/legendsLeagueBot';
-    process.chdir(repoPath);
-
-    // Add the JSON file to git
-    exec(`git add ${dataFilePath}`, (err, stdout, stderr) => {
-        if (err) {
-            console.error('Error adding the file:', err);
-            return;
+    try {
+        // Få nåværende innhold og sha for filen
+        let response = await axios.get(url, { headers });
+        const sha = response.data.sha;
+        // Bruk readData for å hente filinnholdet
+        const data = await readData();
+        if (data === null) {
+            throw new Error('Filen ble ikke funnet');
         }
+        const encodedContent = Buffer.from(JSON.stringify(data, null, 2)).toString('base64');
 
-        // Commit the changes
-        exec('git commit -m "Automated update of JSON file"', (err, stdout, stderr) => {
-            if (err) {
-                console.error('Error committing the changes:', err);
-                return;
-            }
 
-            // Push the changes to GitHub
-            exec('git push origin main', (err, stdout, stderr) => {
-                if (err) {
-                    console.error('Error pushing the changes:', err);
-                    return;
-                }
-                console.log('Changes have been pushed to GitHub.');
-            });
-        });
-    });
+        const updateData = {
+            message: 'Automatisk oppdatering av data',
+            content: encodedContent,
+            sha: sha,
+            branch: BRANCH
+        };
+
+        // Oppdater filen
+        response = await axios.put(url, updateData, { headers });
+        if (response.status === 200) {
+            console.log('Filen ble oppdatert på GitHub');
+        } else {
+            console.log(`Feil ved oppdatering av filen: ${response.status}`);
+        }
+    } catch (error) {
+        console.error(`Feil ved henting eller oppdatering av filen: ${error.message}`);
+    }
 };
-commitAndPush();
+
+updateGithubFile();
+
+
+
+
+
 
 dotenv.config();
 
@@ -53,7 +72,7 @@ app.use(cors());
 app.use(express.static('public'));
 
 const apiKey = process.env.apiToken;
-const playerTag = '9V2QJ9LOP'; 
+const playerTag = '9V2QJ9LOP';
 
 
 
@@ -61,7 +80,7 @@ const playerTag = '9V2QJ9LOP';
 const data = await fetchData();
 let oldTrophies = data.trophies;
 const savedData = await readData();
-const newData = {oldTrophies: oldTrophies, stats: savedData.stats};
+const newData = { oldTrophies: oldTrophies, stats: savedData.stats };
 await writeData(newData);
 
 
@@ -138,11 +157,11 @@ async function eachDay() {
     let monthData = savedData.stats.find(month => month.month === currentMonth); //in case a new season has started: false or null
 
     //when there is a new season, this if-block will run
-    if(!monthData && season === currentMonth){
+    if (!monthData && season === currentMonth) {
         //if a new season has begun, a new month/season object must be created. it should be the first in the json-array, for convenience. 
 
         //the savedData array is expanded
-        savedData.stats = [{"month": currentMonth, "allStats": []}, ...savedData.stats];
+        savedData.stats = [{ "month": currentMonth, "allStats": [] }, ...savedData.stats];
 
         //the array containing the new object gets saved in the json file
         await writeData(savedData);
@@ -154,10 +173,8 @@ async function eachDay() {
     const day = String(currentDate.getDate()).padStart(2, '0');
 
     //adding the new day-object at the start of the allStats array
-    savedData.stats[0].allStats = [{date: day, attacks: [], defences: []}, ...savedData.stats[0].allStats];
+    savedData.stats[0].allStats = [{ date: day, attacks: [], defences: [] }, ...savedData.stats[0].allStats];
     await writeData(savedData);
-    commitAndPush();
-
 }
 
 // scedules the function to run at 07:01 every day
@@ -171,7 +188,7 @@ cron.schedule('1 7 * * *', () => {
 async function checkAndLogAttacksAndDefences() {
     const currentDate = new Date();
     console.log(currentDate);
-    try{
+    try {
         const data = await fetchData();
         const newTrophies = data.trophies; //string
 
@@ -179,23 +196,22 @@ async function checkAndLogAttacksAndDefences() {
         const savedData = await readData();
         const oldTrophies = savedData.oldTrophies; //string
 
-        if(oldTrophies !== newTrophies){
-            
+        if (oldTrophies !== newTrophies) {
+
             const difference = newTrophies - oldTrophies; //will be positive for attacks and negative for defences
             savedData.oldTrophies = newTrophies;
             await writeData(savedData);
             //if the difference is positive, the player has attcked and the positive difference is pushed in the back of the list of attacks
-            if(difference > 0){
+            if (difference > 0) {
                 savedData.stats[0].allStats[0].attacks = [...savedData.stats[0].allStats[0].attacks, difference];
                 console.log(`adding ${difference} to attack`);
                 await writeData(savedData);
             }
             //if the difference is negative, the player has recieved a defence and the negative difference is pushed in the back of the list of defences
-            if(difference < 0) {
+            if (difference < 0) {
                 savedData.stats[0].allStats[0].defences = [...savedData.stats[0].allStats[0].defences, difference];
                 console.log(`adding ${difference} to defence`);
                 await writeData(savedData);
-                commitAndPush();
             }
         } else {
             console.log("no difference in trophies detected");
@@ -213,7 +229,7 @@ app.get('/player-data', async (req, res) => {
 
     try {
         const data = await fetchData();
-        res.json(data); 
+        res.json(data);
     } catch (error) {
         console.error('Error in /player-data route:', error.message);
         res.status(500).send('Error: ' + error.message);
