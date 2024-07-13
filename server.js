@@ -13,7 +13,7 @@ const dataFilePath = 'trophyData.json';
 // Function to commit and push changes
 const commitAndPush = () => {
     // Change to the repository directory
-    const repoPath = path.join(__dirname, 'Crizzyborder30/legendsLeagueBot');
+    const repoPath = path.join(process.cwd(), 'Crizzyborder30/legendsLeagueBot');
     process.chdir(repoPath);
 
     // Add the JSON file to git
@@ -61,6 +61,7 @@ let oldTrophies = data.trophies;
 const savedData = await readData();
 const newData = {oldTrophies: oldTrophies, stats: savedData.stats};
 await writeData(newData);
+commitAndPush();
 
 // helper function to read data from the json file
 async function readData() {
