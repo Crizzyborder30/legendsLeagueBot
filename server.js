@@ -1,7 +1,7 @@
 import express from 'express';
 import fetch from 'node-fetch';
 import cors from 'cors';
-import fs from 'fs/promises';
+import fsProm from 'fs/promises';
 import cron from 'node-cron';
 import dotenv from 'dotenv';
 import { type } from 'os';
@@ -87,7 +87,7 @@ await writeData(newData);
 // helper function to read data from the json file
 async function readData() {
     try {
-        const data = await fs.readFile(dataFilePath, 'utf8');
+        const data = await fsProm.readFile(dataFilePath, 'utf8');
         return JSON.parse(data);
     } catch (error) {
         if (error.code === 'ENOENT') {
@@ -102,7 +102,7 @@ async function readData() {
 async function writeData(data) {
     try {
         console.log(`Writing data to ${dataFilePath}`);
-        await fs.writeFile(dataFilePath, JSON.stringify(data), 'utf8');
+        await fsProm.writeFile(dataFilePath, JSON.stringify(data), 'utf8');
         console.log('Data successfully written to file');
     } catch (error) {
         console.error('Error writing data to file:', error);
