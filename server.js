@@ -15,7 +15,7 @@ const dataFilePath = 'trophyData.json';
 // Function to commit and push changes
 const commitAndPush = () => {
     // Change to the repository directory
-    const repoPath = 'Crizzyborder/legendsLeagueBot';
+    const repoPath = 'https://github.com/Crizzyborder30/legendsLeagueBot';
     process.chdir(repoPath);
 
     // Add the JSON file to git
