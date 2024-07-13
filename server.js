@@ -10,7 +10,26 @@ import { exec } from 'child_process';
 
 const dataFilePath = 'trophyData.json';
 
-// Function to commit and push changes
+// Function to list directory contents
+const listDirectoryContents = (dirPath) => {
+    fs.readdir(dirPath, (err, files) => {
+        if (err) {
+            return console.error(`Unable to scan directory: ${err}`);
+        }
+        files.forEach(file => {
+            console.log(file);
+        });
+    });
+};
+
+// Run the function at startup
+console.log('Current working directory:', process.cwd());
+listDirectoryContents(process.cwd());
+
+
+
+
+/* Function to commit and push changes
 const commitAndPush = () => {
     // Change to the repository directory
     const repoPath = path.join(process.cwd(), 'legendsLeagueBot');
@@ -41,7 +60,7 @@ const commitAndPush = () => {
         });
     });
 };
-
+commitAndPush();*/
 
 dotenv.config();
 
@@ -61,7 +80,7 @@ let oldTrophies = data.trophies;
 const savedData = await readData();
 const newData = {oldTrophies: oldTrophies, stats: savedData.stats};
 await writeData(newData);
-commitAndPush();
+
 
 // helper function to read data from the json file
 async function readData() {
