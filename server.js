@@ -12,11 +12,13 @@ const dataFilePath = 'trophyData.json';
 
 // Function to list directory contents
 const listDirectoryContents = (dirPath) => {
+    console.log("ran");
     fs.readdir(dirPath, (err, files) => {
         if (err) {
             return console.error(`Unable to scan directory: ${err}`);
         }
         files.forEach(file => {
+            console.log("1");
             console.log(file);
         });
     });
@@ -24,7 +26,7 @@ const listDirectoryContents = (dirPath) => {
 
 // Run the function at startup
 console.log('Current working directory:', process.cwd());
-listDirectoryContents(process.cwd());
+listDirectoryContents(path.join(process.cwd(), 'Crizzyborder30/legendsLeagueBot'));
 
 
 
