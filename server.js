@@ -1,7 +1,7 @@
 import express from 'express';
 import fetch from 'node-fetch';
 import cors from 'cors';
-import fs from 'fs/promises'; 
+import fs from 'fs'; 
 import cron from 'node-cron';
 import dotenv from 'dotenv';
 import { type } from 'os';
