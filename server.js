@@ -1,7 +1,7 @@
 import express from 'express';
 import fetch from 'node-fetch';
 import cors from 'cors';
-import fs from 'fs'; 
+import fs from 'fs/promises'; 
 import cron from 'node-cron';
 import dotenv from 'dotenv';
 import { type } from 'os';
@@ -10,31 +10,12 @@ import { exec } from 'child_process';
 
 const dataFilePath = 'trophyData.json';
 
-// Function to list directory contents
-const listDirectoryContents = (dirPath) => {
-    console.log("ran");
-    fs.readdir(dirPath, (err, files) => {
-        if (err) {
-            return console.error(`Unable to scan directory: ${err}`);
-        }
-        files.forEach(file => {
-            console.log("1");
-            console.log(file);
-        });
-    });
-};
-
-// Run the function at startup
-console.log('Current working directory:', process.cwd());
-listDirectoryContents(path.join(process.cwd(), 'Crizzyborder30/legendsLeagueBot'));
 
 
-
-
-/* Function to commit and push changes
+// Function to commit and push changes
 const commitAndPush = () => {
     // Change to the repository directory
-    const repoPath = path.join(process.cwd(), 'legendsLeagueBot');
+    const repoPath = 'Crizzyborder/legendsLeagueBot';
     process.chdir(repoPath);
 
     // Add the JSON file to git
@@ -62,7 +43,7 @@ const commitAndPush = () => {
         });
     });
 };
-commitAndPush();*/
+commitAndPush();
 
 dotenv.config();
 
