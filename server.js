@@ -200,6 +200,7 @@ async function checkAndLogAttacksAndDefences() {
                 savedData.stats[0].allStats[0].attacks = [...savedData.stats[0].allStats[0].attacks, difference];
                 console.log(`adding ${difference} to attack`);
                 await writeData(savedData);
+                await updateGithubFile();
             }
             //if the difference is negative, the player has recieved a defence and the negative difference is pushed in the back of the list of defences
             if (difference < 0) {
