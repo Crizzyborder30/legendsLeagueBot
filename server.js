@@ -217,8 +217,8 @@ async function checkAndLogAttacksAndDefences() {
     }
 }
 
-//makes the function run every 1.5 minutes
-setInterval(checkAndLogAttacksAndDefences, 90000);
+//makes the function run every minute
+setInterval(checkAndLogAttacksAndDefences, 60000);
 
 //called to get the data from the coc api
 app.get('/player-data', async (req, res) => {
