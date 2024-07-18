@@ -197,15 +197,37 @@ async function checkAndLogAttacksAndDefences() {
             await writeData(savedData);
             //if the difference is positive, the player has attcked and the positive difference is pushed in the back of the list of attacks
             if (difference > 0) {
-                savedData.stats[0].allStats[0].attacks = [...savedData.stats[0].allStats[0].attacks, difference];
-                console.log(`adding ${difference} to attack`);
+
+                //if the difference is over 40, there has been two attacks by the time the function has ran
+                if(difference > 40){
+                    const firstAttack = 40;
+                    const secondAttack = difference - 40;
+                    savedData.stats[0].allStats[0].attacks = [...savedData.stats[0].allStats[0].attacks, firstAttack, secondAttack];
+                    console.log(`adding ${firstAttack} and ${secondAttack} to attack`);
+                }
+                else {
+                    savedData.stats[0].allStats[0].attacks = [...savedData.stats[0].allStats[0].attacks, difference];
+                    console.log(`adding ${difference} to attack`);
+                }
+
                 await writeData(savedData);
                 await updateGithubFile();
             }
             //if the difference is negative, the player has recieved a defence and the negative difference is pushed in the back of the list of defences
             if (difference < 0) {
-                savedData.stats[0].allStats[0].defences = [...savedData.stats[0].allStats[0].defences, difference];
-                console.log(`adding ${difference} to defence`);
+
+                //if the difference is under -40, there has been two defeneces by the time the function has ran
+                if(difference < -40){
+                    const firstDefence = -40;
+                    const secondDefence = difference + 40;
+                    savedData.stats[0].allStats[0].defences = [...savedData.stats[0].allStats[0].defences, firstDefence, secondDefence];
+                    console.log(`adding ${firstDefence} and ${secondDefence} to attack`);
+                }
+                else {
+                    savedData.stats[0].allStats[0].defences = [...savedData.stats[0].allStats[0].defences, difference];
+                    console.log(`adding ${difference} to defence`);
+                }
+                
                 await writeData(savedData);
                 await updateGithubFile();
             }
