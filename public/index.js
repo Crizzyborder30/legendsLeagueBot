@@ -22,8 +22,10 @@ async function displayBasicPlayerData() {
         }
         const data = await response.json();  // Konverter respons til JSON
         console.log(data);
-        document.getElementById("player-data").innerHTML = "Player: " + data.name +
+        document.getElementById("player-data").innerHTML = 
+            "Player: " + data.name +
             "<br>Current trophies: " + data.trophies +
+            "<br>Best trophies: " + data.bestTrophies +
             "<br>Current season: " + formatDateToMonthYear(currentDate);
 
     } catch (error) {
