@@ -250,6 +250,7 @@ async function checkAndLogAttacksAndDefences() {
         } else {
             console.log("no difference in trophies detected");
         }
+        success = true;
     } catch (error) {
         console.error('Error:', error);
     }
