@@ -172,9 +172,10 @@ async function eachDay() {
 
             //adding the new day-object at the start of the allStats array
             savedData.stats[0].allStats = [{ date: day, attacks: [], defences: [] }, ...savedData.stats[0].allStats];
+            savedData.previousSeason = newPreviousSeason;
             await writeData(savedData);
             await updateGithubFile();
-
+            success = true;
         }
         catch (error) {
             console.error("Feil oppstod: ", error)
@@ -250,7 +251,7 @@ async function checkAndLogAttacksAndDefences() {
         } else {
             console.log("no difference in trophies detected");
         }
-        success = true;
+        
     } catch (error) {
         console.error('Error:', error);
     }
