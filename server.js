@@ -187,7 +187,6 @@ async function eachDay() {
 
 }
 
-eachDay();
 // scedules the function to run at 07:01 every day
 cron.schedule('1 5 * * *', () => {
     console.log('Running the scheduled task at 07:01');
