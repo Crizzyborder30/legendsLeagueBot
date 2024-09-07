@@ -1,6 +1,7 @@
 {
   "oldTrophies": 5374,
   "previousSeason": "2024-07",
+
   "stats": [
     {
       "month": "2024-09",
@@ -13,6 +14,7 @@
           ],
           "defences": [
             -27,
+            -40,
             -40
           ]
         },
