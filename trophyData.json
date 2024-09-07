@@ -3216,6 +3216,16 @@
       "allStats": [
         {
           "date": "07",
+          "attacks": [],
+          "defences": []
+        }
+      ]
+    },
+    {
+      "month": "2024-09",
+      "allStats": [
+        {
+          "date": "07",
           "attacks": [
             40,
             40
