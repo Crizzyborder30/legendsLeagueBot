@@ -2,7 +2,7 @@
   "oldTrophies": 5374,
   "stats": [
     {
-      "month": "2024-06",
+      "month": "2024-09",
       "allStats": [
         {
           "date": "07",
@@ -56,7 +56,12 @@
             -20,
             -40
           ]
-        },
+        }
+      ]
+    },
+    {
+      "month": "2024-06",
+      "allStats": [
         {
           "date": "18",
           "attacks": [
