@@ -5,10 +5,11 @@ import fsProm from 'fs/promises';
 import cron from 'node-cron';
 import dotenv from 'dotenv';
 import { type } from 'os';
-import path from 'path';
+import path, { resolve } from 'path';
 import { exec } from 'child_process';
 import axios from 'axios';
 import fs from 'fs';
+import { get } from 'http';
 
 // GitHub repo detaljer
 const GITHUB_REPO = 'Crizzyborder30/legendsLeagueBot';
@@ -134,43 +135,58 @@ function getCurrentMonth() {
     return `${year}-${month}`;
 }
 
+
+
+
 //runs 07:01 every day, since a new legens day starts at 07:00
 //checks if a new season has begun, and then adds a new month-object in the json array
 //also adds a new day object in the allStats array
 async function eachDay() {
-    const data = await fetchData();
+    let success = false;
 
-    //old season id. used to check if a new month-object should be created
-    const season = data.legendStatistics.previousSeason.id; //"2024-06"
-    const currentMonth = getCurrentMonth(); //"2024-06"
-    const savedData = await readData();
+    while (!success) {
+        try {
+            const data = await fetchData();
+            const savedData = await readData();
 
-    //checks whether an object for this season already exists in the json file
-    //will be true most of the time
-    let monthData = savedData.stats.find(month => month.month === currentMonth); //in case a new season has started: false or null
+            //old season id. used to check if a new month-object should be created
+            const previousSeason = savedData.previousSeason; //"2024-05"
+            const newPreviousSeason = data.legendStatistics.previousSeason.id; //"2024-06"
 
-    //when there is a new season, this if-block will run
-    if (!monthData && season === currentMonth) {
-        //if a new season has begun, a new month/season object must be created. it should be the first in the json-array, for convenience. 
+            //when there is a new season, this if-block will run
+            if (previousSeason !== newPreviousSeason) {
+                //if a new season has begun, a new month/season object must be created. it should be the first in the json-array, for convenience. 
 
-        //the savedData array is expanded
-        savedData.stats = [{ "month": currentMonth, "allStats": [] }, ...savedData.stats];
+                //the savedData array is expanded
+                const currentMonth = getCurrentMonth();
+                savedData.stats = [{ "month": currentMonth, "allStats": [] }, ...savedData.stats];
 
-        //the array containing the new object gets saved in the json file
-        await writeData(savedData);
+                //the array containing the new object gets saved in the json file
+                await writeData(savedData);
 
+            }
+
+            //regardless of whether a new object was created or not, a new object will be created in the allStats array
+            const currentDate = new Date();
+            const day = String(currentDate.getDate()).padStart(2, '0');
+
+            //adding the new day-object at the start of the allStats array
+            savedData.stats[0].allStats = [{ date: day, attacks: [], defences: [] }, ...savedData.stats[0].allStats];
+            await writeData(savedData);
+            await updateGithubFile();
+
+        }
+        catch (error) {
+            console.error("Feil oppstod: ", error)
+
+            console.log("Tries again in 30 secounds...");
+            await new Promise(resolve => setTimeout(resolve, 30000));
+        }
     }
 
-    //regardless of whether a new object was created or not, a new object will be created in the allStats array
-    const currentDate = new Date();
-    const day = String(currentDate.getDate()).padStart(2, '0');
-
-    //adding the new day-object at the start of the allStats array
-    savedData.stats[0].allStats = [{ date: day, attacks: [], defences: [] }, ...savedData.stats[0].allStats];
-    await writeData(savedData);
-    await updateGithubFile();
 }
 
+eachDay();
 // scedules the function to run at 07:01 every day
 cron.schedule('1 5 * * *', () => {
     console.log('Running the scheduled task at 07:01');
@@ -199,7 +215,7 @@ async function checkAndLogAttacksAndDefences() {
             if (difference > 0) {
 
                 //if the difference is over 40, there has been two attacks by the time the function has ran
-                if(difference > 40){
+                if (difference > 40) {
                     const firstAttack = 40;
                     const secondAttack = difference - 40;
                     savedData.stats[0].allStats[0].attacks = [...savedData.stats[0].allStats[0].attacks, firstAttack, secondAttack];
@@ -217,7 +233,7 @@ async function checkAndLogAttacksAndDefences() {
             if (difference < 0) {
 
                 //if the difference is under -40, there has been two defeneces by the time the function has ran
-                if(difference < -40){
+                if (difference < -40) {
                     const firstDefence = -40;
                     const secondDefence = difference + 40;
                     savedData.stats[0].allStats[0].defences = [...savedData.stats[0].allStats[0].defences, firstDefence, secondDefence];
@@ -227,7 +243,7 @@ async function checkAndLogAttacksAndDefences() {
                     savedData.stats[0].allStats[0].defences = [...savedData.stats[0].allStats[0].defences, difference];
                     console.log(`adding ${difference} to defence`);
                 }
-                
+
                 await writeData(savedData);
                 await updateGithubFile();
             }
