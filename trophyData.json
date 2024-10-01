@@ -2,6 +2,16 @@
   "oldTrophies": 5147,
   "stats": [
     {
+      "month": "2024-10",
+      "allStats": [
+        {
+          "date": "01",
+          "attacks": [],
+          "defences": []
+        }
+      ]
+    },
+    {
       "month": "2024-09",
       "allStats": [
         {
@@ -689,5 +699,5 @@
       ]
     }
   ],
-  "previousSeason": "2024-08"
+  "previousSeason": "2024-09"
 }
