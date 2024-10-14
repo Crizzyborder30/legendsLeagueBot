@@ -5,6 +5,11 @@
       "month": "2024-10",
       "allStats": [
         {
+          "date": "14",
+          "attacks": [],
+          "defences": []
+        },
+        {
           "date": "13",
           "attacks": [
             19,
