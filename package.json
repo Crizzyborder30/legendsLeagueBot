@@ -7,7 +7,7 @@
     "start": "node server.js"
   },
   "dependencies": {
-    "axios": "^1.4.0",  
+    "axios": "^1.4.0",
     "cors": "^2.8.5",
     "cron": "^3.1.7",
     "dotenv": "^8.6.0",
@@ -19,5 +19,6 @@
   "keywords": [],
   "author": "",
   "license": "ISC",
-  "description": "detecting, saving and displaying legend league stats"
+  "description": "detecting, saving and displaying legend league stats",
+  "devDependencies": {}
 }

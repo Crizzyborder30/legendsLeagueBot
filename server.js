@@ -11,6 +11,13 @@ import axios from 'axios';
 import fs from 'fs';
 import { get } from 'http';
 
+dotenv.config();
+const app = express();
+
+app.use(cors());
+app.use(express.static('public'));
+
+
 // GitHub repo detaljer
 const GITHUB_REPO = 'Crizzyborder30/legendsLeagueBot';
 const GITHUB_TOKEN = process.env.gitToken;
@@ -58,12 +65,8 @@ const updateGithubFile = async () => {
     }
 };
 
-dotenv.config();
 
-const app = express();
 
-app.use(cors());
-app.use(express.static('public'));
 
 const apiKey = process.env.apiToken;
 const playerTag = '9V2QJ9LOP';
