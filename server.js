@@ -194,7 +194,7 @@ async function eachDay() {
             monthlyStats = [{ date: day, attacks: [], defences: [] }, ...monthlyStats];
             savedData.stats[0].allStats = monthlyStats;
             await writeData(savedData);
-            await updateGithubFile();
+            await updateGithubFile(savedData);
             success = true;
             console.log("New day-object is created and saved. " + today);
         }
@@ -277,7 +277,7 @@ async function checkAndLogAttacksAndDefences() {
                 }
 
                 await writeData(savedData);
-                await updateGithubFile();
+                await updateGithubFile(savedData);
 
             } else {
                 console.log("no difference in trophies detected");
