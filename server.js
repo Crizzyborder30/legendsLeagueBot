@@ -4,12 +4,7 @@ import cors from 'cors';
 import fsProm from 'fs/promises';
 import cron from 'node-cron';
 import dotenv from 'dotenv';
-import { type } from 'os';
-import path, { resolve } from 'path';
-import { exec } from 'child_process';
 import axios from 'axios';
-import fs from 'fs';
-import { get } from 'http';
 
 dotenv.config();
 const app = express();
@@ -65,21 +60,17 @@ const updateGithubFile = async () => {
     }
 };
 
-
-
-
 const apiKey = process.env.apiToken;
 const playerTag = '9V2QJ9LOP';
 
-
-
 //collects and saves the trophies as soon as the server starts running, but keeps the stats the same
-const data = await fetchData();
-let oldTrophies = data.trophies;
-const savedData = await readData();
-const newData = { oldTrophies: oldTrophies, stats: savedData.stats };
-await writeData(newData);
-await updateGithubFile();
+
+const data = await fetchData(); //player data from the api
+let oldTrophies = data.trophies; //the trophies at the time of the server being started (should only really be once)
+const savedData = await readData(); //data saved before the server went down
+const newData = { oldTrophies: oldTrophies, stats: savedData.stats }; //changes the old trophy variable but keeps the stats unchanged
+await writeData(newData); //updates the json file
+await updateGithubFile(); //pushes the update to github
 
 // helper function to read data from the json file
 async function readData() {
@@ -107,7 +98,7 @@ async function writeData(data) {
 }
 
 
-// gets data from the api
+// gets data from the api and uses return to return the data
 async function fetchData() {
     const url = `https://api.clashofclans.com/v1/players/%23${playerTag}`;
     try {
@@ -139,6 +130,15 @@ function getCurrentMonth() {
 }
 
 
+//function to calculate which monday is the last in the month, as that is when a new season starts
+function newSeasonStartDate(year, month) {
+    //the last day of this month (since the dates start at 1 and not 0 will "month + 1, 0" give us the last day of this month)
+    const lastDay = new Date(year, month + 1, 0);
+    const dayOfWeek = lastDay.getDay(); //Sunday = 0, Monday = 1 etc.
+    //basically an if-else statement to get the amount of days we need to go back from the last day to find the last Monday
+    const offset = dayOfWeek >= 1 ? dayOfWeek - 1 : 6;
+    return new Date(year, month, lastDay.getDate() - offset);
+}
 
 
 //runs 07:01 every day, since a new legens day starts at 07:00
@@ -152,33 +152,52 @@ async function eachDay() {
             const data = await fetchData();
             const savedData = await readData();
 
-            //old season id. used to check if a new month-object should be created
-            const previousSeason = savedData.previousSeason; //"2024-05"
-            const newPreviousSeason = data.legendStatistics.previousSeason.id; //"2024-06"
+            const today = new Date();
+            const dayOfWeek = today.getDay(); //Sunday = 0, Monday = 1 etc.
 
-            //when there is a new season, this if-block will run
-            if (previousSeason !== newPreviousSeason) {
-                //if a new season has begun, a new month/season object must be created. it should be the first in the json-array, for convenience. 
+            //if its Monday, check if its the last Monday of the month as that is when the new season ends. if so, create a new month-object
+            if (dayOfWeek === 1) {
 
-                //the savedData array is expanded
-                const currentMonth = getCurrentMonth();
-                savedData.stats = [{ "month": currentMonth, "allStats": [] }, ...savedData.stats];
+                const year = today.getFullYear();
+                const month = today.getMonth();
 
-                //the array containing the new object gets saved in the json file
-                await writeData(savedData);
+                const firstDayOfNewSeason = newSeasonStartDate(year, month);
 
+                if (today.getDate() === firstDayOfNewSeason.getDate() && today.getMonth() === firstDayOfNewSeason.getMonth()) {
+                    //if a new season has begun, a new month/season object must be created. it should be the first in the json-array, for convenience. 
+
+                    //the savedData array is expanded
+                    const currentMonth = getCurrentMonth();
+                    savedData.stats = [{ "month": currentMonth, "allStats": [] }, ...savedData.stats];
+
+                    //if a new season is starting, the thophies gets reset in LL so this line is to not get hundreds of minus the first day of the season
+                    savedData.oldTrophies = data.trophies;
+
+                    //the array containing the new object gets saved in the json file
+                    await writeData(savedData);
+                    console.log("New month-object has been created and saved at: " + today);
+
+                } 
+                else{
+                    console.log("Its Monday but not a new season. Date: " + today);
+                }
+            }
+            else {
+                console.log("Its not Monday. " + today);
             }
 
+
             //regardless of whether a new object was created or not, a new object will be created in the allStats array
-            const currentDate = new Date();
-            const day = String(currentDate.getDate()).padStart(2, '0');
+            const day = String(today.getDate()).padStart(2, '0');
 
             //adding the new day-object at the start of the allStats array
-            savedData.stats[0].allStats = [{ date: day, attacks: [], defences: [] }, ...savedData.stats[0].allStats];
-            savedData.previousSeason = newPreviousSeason;
+            const monthlyStats = savedData.stats[0].allStats;
+            monthlyStats = [{ date: day, attacks: [], defences: [] }, ...monthlyStats];
+            savedData.stats[0].allStats = monthlyStats;
             await writeData(savedData);
             await updateGithubFile();
             success = true;
+            console.log("New day-object is created and saved. " + today);
         }
         catch (error) {
             console.error("Feil oppstod: ", error)
@@ -190,17 +209,17 @@ async function eachDay() {
 
 }
 
-// scedules the function to run at 07:01 every day
-cron.schedule('1 5 * * *', () => {
-    console.log('Running the scheduled task at 07:01');
+// scedules the function to run at 06:00 every day
+cron.schedule('0 4 * * *', () => {
+    console.log('Running the scheduled task at 06:00');
     eachDay();
 });
 
 
-//code that runs every 2 minutes 
+//code that runs every minute
 async function checkAndLogAttacksAndDefences() {
-    const currentDate = new Date();
-    console.log(currentDate);
+    const today = new Date();
+    console.log(today);
     try {
         const data = await fetchData();
         const newTrophies = data.trophies; //string
@@ -209,51 +228,66 @@ async function checkAndLogAttacksAndDefences() {
         const savedData = await readData();
         const oldTrophies = savedData.oldTrophies; //string
 
-        if (oldTrophies !== newTrophies) {
-
-            const difference = newTrophies - oldTrophies; //will be positive for attacks and negative for defences
-            savedData.oldTrophies = newTrophies;
-            await writeData(savedData);
-            //if the difference is positive, the player has attcked and the positive difference is pushed in the back of the list of attacks
-            if (difference > 0) {
-
-                //if the difference is over 40, there has been two attacks by the time the function has ran
-                if (difference > 40) {
-                    const firstAttack = 40;
-                    const secondAttack = difference - 40;
-                    savedData.stats[0].allStats[0].attacks = [...savedData.stats[0].allStats[0].attacks, firstAttack, secondAttack];
-                    console.log(`adding ${firstAttack} and ${secondAttack} to attack`);
-                }
-                else {
-                    savedData.stats[0].allStats[0].attacks = [...savedData.stats[0].allStats[0].attacks, difference];
-                    console.log(`adding ${difference} to attack`);
-                }
-
-                await writeData(savedData);
-                await updateGithubFile();
-            }
-            //if the difference is negative, the player has recieved a defence and the negative difference is pushed in the back of the list of defences
-            if (difference < 0) {
-
-                //if the difference is under -40, there has been two defeneces by the time the function has ran
-                if (difference < -40) {
-                    const firstDefence = -40;
-                    const secondDefence = difference + 40;
-                    savedData.stats[0].allStats[0].defences = [...savedData.stats[0].allStats[0].defences, firstDefence, secondDefence];
-                    console.log(`adding ${firstDefence} and ${secondDefence} to attack`);
-                }
-                else {
-                    savedData.stats[0].allStats[0].defences = [...savedData.stats[0].allStats[0].defences, difference];
-                    console.log(`adding ${difference} to defence`);
-                }
-
-                await writeData(savedData);
-                await updateGithubFile();
-            }
-        } else {
-            console.log("no difference in trophies detected");
-        }
+        //checking if the player is in legends league. if not
+        const playerLeague = data.league.name;
         
+        if (playerLeague === "Legend League") {
+            if (oldTrophies !== newTrophies) {
+
+                const difference = newTrophies - oldTrophies; //will be positive for attacks and negative for defences
+                savedData.oldTrophies = newTrophies;
+
+                //if the difference is positive, the player has attcked and the positive difference is pushed in the back of the list of attacks
+                if (difference > 0) {
+                    const todaysAttacks = savedData.stats[0].allStats[0].attacks;
+                    //if the difference is over 40, there has been two attacks by the time the function has ran
+                    if (difference > 40) {
+                        const firstAttack = 40;
+                        const secondAttack = difference - 40;
+                        todaysAttacks = [...todaysAttacks, firstAttack, secondAttack];
+                        savedData.stats[0].allStats[0].attacks = todaysAttacks;
+
+                        console.log(`adding ${firstAttack} and ${secondAttack} to attack`);
+                    }
+                    else {
+                        todaysAttacks = [...todaysAttacks, difference];
+                        savedData.stats[0].allStats[0].attacks = todaysAttacks;
+
+                        console.log(`adding ${difference} to attack`);
+                    }
+                }
+                //if the difference is negative, the player has recieved a defence and the negative difference is pushed in the back of the list of defences
+                if (difference < 0) {
+
+                    const todaysDefences = savedData.stats[0].allStats[0].defences;
+                    //if the difference is under -40, there has been two defeneces by the time the function has ran
+                    if (difference < -40) {
+                        const firstDefence = -40;
+                        const secondDefence = difference + 40;
+                        todaysDefences = [...todaysDefences, firstDefence, secondDefence];
+                        savedData.stats[0].allStats[0].defences = todaysDefences;
+
+                        console.log(`adding ${firstDefence} and ${secondDefence} to attack`);
+                    }
+                    else {
+                        todaysDefences = [...todaysDefences, difference];
+                        savedData.stats[0].allStats[0].defences = todaysDefences;
+
+                        console.log(`adding ${difference} to defence`);
+                    }
+                }
+
+                await writeData(savedData);
+                await updateGithubFile();
+
+            } else {
+                console.log("no difference in trophies detected");
+            }
+        }
+        else {
+            console.log("Player is not in Legends League");
+        }
+
     } catch (error) {
         console.error('Error:', error);
     }
