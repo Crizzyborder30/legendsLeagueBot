@@ -22,7 +22,7 @@ const BRANCH = 'main';
 const dataFilePath = 'trophyData.json';
 
 // Funksjon for å oppdatere filen på GitHub
-const updateGithubFile = async () => {
+const updateGithubFile = async (data) => {
     const url = `https://api.github.com/repos/${GITHUB_REPO}/contents/${dataFilePath}`;
     const headers = {
         'Authorization': `token ${GITHUB_TOKEN}`,
@@ -33,8 +33,7 @@ const updateGithubFile = async () => {
         // Få nåværende innhold og sha for filen
         let response = await axios.get(url, { headers });
         const sha = response.data.sha;
-        // Bruk readData for å hente filinnholdet
-        const data = await readData();
+       
         if (data === null) {
             throw new Error('Filen ble ikke funnet');
         }
@@ -51,7 +50,8 @@ const updateGithubFile = async () => {
         // Oppdater filen
         response = await axios.put(url, updateData, { headers });
         if (response.status === 200) {
-            console.log('Filen ble oppdatert på GitHub');
+            console.log('Filen ble oppdatert på GitHub til:');
+            console.log(data);
         } else {
             console.log(`Feil ved oppdatering av filen: ${response.status}`);
         }
@@ -68,9 +68,11 @@ const playerTag = '9V2QJ9LOP';
 const data = await fetchData(); //player data from the api
 let oldTrophies = data.trophies; //the trophies at the time of the server being started (should only really be once)
 const savedData = await readData(); //data saved before the server went down
+console.log(savedData);
 const newData = { oldTrophies: oldTrophies, stats: savedData.stats }; //changes the old trophy variable but keeps the stats unchanged
+console.log(newData);
 await writeData(newData); //updates the json file
-await updateGithubFile(); //pushes the update to github
+await updateGithubFile(newData); //pushes the update to github
 
 // helper function to read data from the json file
 async function readData() {
