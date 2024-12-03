@@ -99,7 +99,6 @@ async function writeData(data) {
     }
 }
 
-
 // gets data from the api and uses return to return the data
 async function fetchData() {
     const url = `https://api.clashofclans.com/v1/players/%23${playerTag}`;
@@ -131,7 +130,6 @@ function getCurrentMonth() {
     return `${year}-${month}`;
 }
 
-
 //function to calculate which monday is the last in the month, as that is when a new season starts
 function newSeasonStartDate(year, month) {
     //the last day of this month (since the dates start at 1 and not 0 will "month + 1, 0" give us the last day of this month)
@@ -141,7 +139,6 @@ function newSeasonStartDate(year, month) {
     const offset = dayOfWeek >= 1 ? dayOfWeek - 1 : 6;
     return new Date(year, month, lastDay.getDate() - offset);
 }
-
 
 //runs 07:01 every day, since a new legens day starts at 07:00
 //checks if a new season has begun, and then adds a new month-object in the json array
@@ -193,7 +190,7 @@ async function eachDay() {
             const day = String(today.getDate()).padStart(2, '0');
 
             //adding the new day-object at the start of the allStats array
-            const monthlyStats = savedData.stats[0].allStats;
+            let monthlyStats = savedData.stats[0].allStats;
             monthlyStats = [{ date: day, attacks: [], defences: [] }, ...monthlyStats];
             savedData.stats[0].allStats = monthlyStats;
             await writeData(savedData);
@@ -241,7 +238,7 @@ async function checkAndLogAttacksAndDefences() {
 
                 //if the difference is positive, the player has attcked and the positive difference is pushed in the back of the list of attacks
                 if (difference > 0) {
-                    const todaysAttacks = savedData.stats[0].allStats[0].attacks;
+                    let todaysAttacks = savedData.stats[0].allStats[0].attacks;
                     //if the difference is over 40, there has been two attacks by the time the function has ran
                     if (difference > 40) {
                         const firstAttack = 40;
@@ -261,7 +258,7 @@ async function checkAndLogAttacksAndDefences() {
                 //if the difference is negative, the player has recieved a defence and the negative difference is pushed in the back of the list of defences
                 if (difference < 0) {
 
-                    const todaysDefences = savedData.stats[0].allStats[0].defences;
+                    let todaysDefences = savedData.stats[0].allStats[0].defences;
                     //if the difference is under -40, there has been two defeneces by the time the function has ran
                     if (difference < -40) {
                         const firstDefence = -40;

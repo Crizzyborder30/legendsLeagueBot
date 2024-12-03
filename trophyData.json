@@ -6,7 +6,9 @@
             "allStats": [
                 {
                     "date": "03",
-                    "attacks": [],
+                    "attacks": [
+                        40
+                    ],
                     "defences": [
                         -24,
                         -10,
