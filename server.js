@@ -50,8 +50,7 @@ const updateGithubFile = async (data) => {
         // Oppdater filen
         response = await axios.put(url, updateData, { headers });
         if (response.status === 200) {
-            console.log('Filen ble oppdatert på GitHub til:');
-            console.log(data);
+            console.log('Filen ble oppdatert på GitHub');
         } else {
             console.log(`Feil ved oppdatering av filen: ${response.status}`);
         }
@@ -177,6 +176,7 @@ async function eachDay() {
                     //the array containing the new object gets saved in the json file
                     await writeData(savedData);
                     console.log("New month-object has been created and saved at: " + today);
+                    console.log(savedData);
 
                 }
                 else {
@@ -199,6 +199,7 @@ async function eachDay() {
             await updateGithubFile(savedData);
             success = true;
             console.log("New day-object is created and saved. " + today);
+            console.log(savedData.stats[0]);
         }
         catch (error) {
             console.error("Feil oppstod: ", error)
@@ -266,7 +267,7 @@ async function checkAndLogAttacksAndDefences() {
                         todaysDefences = [...todaysDefences, firstDefence, secondDefence];
                         savedData.stats[0].allStats[0].defences = todaysDefences;
 
-                        console.log(`adding ${firstDefence} and ${secondDefence} to attack`);
+                        console.log(`adding ${firstDefence} and ${secondDefence} to defence`);
                     }
                     else {
                         todaysDefences = [...todaysDefences, difference];
