@@ -33,7 +33,7 @@ const updateGithubFile = async (data) => {
         // Få nåværende innhold og sha for filen
         let response = await axios.get(url, { headers });
         const sha = response.data.sha;
-       
+
         if (data === null) {
             throw new Error('Filen ble ikke funnet');
         }
@@ -65,15 +65,17 @@ const playerTag = '9V2QJ9LOP';
 
 //collects and saves the trophies as soon as the server starts running, but keeps the stats the same
 
-const data = await fetchData(); //player data from the api
-let oldTrophies = data.trophies; //the trophies at the time of the server being started (should only really be once)
-const savedData = await readData(); //data saved before the server went down
-console.log(savedData);
-const newData = { oldTrophies: oldTrophies, stats: savedData.stats }; //changes the old trophy variable but keeps the stats unchanged
-console.log(newData);
-await writeData(newData); //updates the json file
-await updateGithubFile(newData); //pushes the update to github
-
+try {
+    const data = await fetchData(); //player data from the api
+    let oldTrophies = data.trophies; //the trophies at the time of the server being started (should only really be once)
+    const savedData = await readData(); //data saved before the server went down
+    const newData = { oldTrophies: oldTrophies, stats: savedData.stats }; //changes the old trophy variable but keeps the stats unchanged
+    await writeData(newData); //updates the json file
+    await updateGithubFile(newData); //pushes the update to github
+}
+catch (error) {
+    console.error("An error occured: ", error);
+}
 // helper function to read data from the json file
 async function readData() {
     try {
@@ -176,8 +178,8 @@ async function eachDay() {
                     await writeData(savedData);
                     console.log("New month-object has been created and saved at: " + today);
 
-                } 
-                else{
+                }
+                else {
                     console.log("Its Monday but not a new season. Date: " + today);
                 }
             }
@@ -217,8 +219,6 @@ cron.schedule('0 4 * * *', () => {
 
 //code that runs every minute
 async function checkAndLogAttacksAndDefences() {
-    const today = new Date();
-    console.log(today);
     try {
         const data = await fetchData();
         const newTrophies = data.trophies; //string
@@ -229,7 +229,7 @@ async function checkAndLogAttacksAndDefences() {
 
         //checking if the player is in legends league. if not
         const playerLeague = data.league.name;
-        
+
         if (playerLeague === "Legend League") {
             if (oldTrophies !== newTrophies) {
 
@@ -279,8 +279,6 @@ async function checkAndLogAttacksAndDefences() {
                 await writeData(savedData);
                 await updateGithubFile(savedData);
 
-            } else {
-                console.log("no difference in trophies detected");
             }
         }
         else {
