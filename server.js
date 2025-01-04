@@ -146,9 +146,39 @@ function newSeasonStartDate(year, month) {
     return new Date(year, month, lastDay.getDate() - offset);
 }
 
-//runs 07:01 every day, since a new legens day starts at 07:00
-//checks if a new season has begun, and then adds a new month-object in the json array
-//also adds a new day object in the allStats array
+function newSeason(today) {
+    const year = today.getFullYear();
+    const month = today.getMonth();
+    const firstDayOfNewSeason = newSeasonStartDate(year, month);
+
+    //true or false
+    return today.toDateString() === firstDayOfNewSeason.toDateString();
+}
+
+function createMonthObject(savedData) {
+    if (!savedData.stats) {
+        savedData.stats = [];
+    }
+    if (!savedData.oldTrophies) {
+        savedData.oldTrophies = 0;
+    }
+    const nextMonth = getNextMonth() || 0;
+    savedData.stats = [{ "month": nextMonth, "allStats": [] }, ...savedData.stats];
+
+    //if a new season is starting, the thophies gets reset in LL so this line is to not get hundreds of minus the first day of the season
+    savedData.oldTrophies = 5000;
+}
+
+function createDayObject(today, savedData) {
+    if (!savedData.stats || savedData.stats.length === 0) {
+        throw new Error("No stats available to add a day object.");
+    }
+    const day = String(today.getDate()).padStart(2, '0');
+    const monthlyStats = savedData.stats[0].allStats || [];
+
+    savedData.stats[0].allStats = [{ date: day, attacks: [], defences: [] }, ...monthlyStats];
+}
+
 async function eachDay() {
     let success = false;
 
@@ -161,50 +191,18 @@ async function eachDay() {
             const dayOfWeek = today.getDay(); //Sunday = 0, Monday = 1 etc.
 
             //if its Monday, check if its the last Monday of the month as that is when the new season ends. if so, create a new month-object
-            if (dayOfWeek === 1) {
-
-                const year = today.getFullYear();
-                const month = today.getMonth();
-
-                const firstDayOfNewSeason = newSeasonStartDate(year, month);
-
-                if (today.getDate() === firstDayOfNewSeason.getDate() && today.getMonth() === firstDayOfNewSeason.getMonth()) {
-                    //if a new season has begun, a new month/season object must be created. it should be the first in the json-array, for convenience. 
-
-                    //the savedData array is expanded
-                    const nextMonth = getNextMonth();
-                    savedData.stats = [{ "month": nextMonth, "allStats": [] }, ...savedData.stats];
-
-                    //if a new season is starting, the thophies gets reset in LL so this line is to not get hundreds of minus the first day of the season
-                    savedData.oldTrophies = 5000;
-
-                    //the array containing the new object gets saved in the json file
-                    await writeData(savedData);
-                    console.log("New month-object has been created and saved at: " + today);
-                    console.log(savedData);
-
-                }
-                else {
-                    console.log("Its Monday but not a new season. Date: " + today);
-                }
-            }
-            else {
-                console.log("Its not Monday. " + today);
+            if (dayOfWeek === 1 && newSeason(today)) {
+                createMonthObject(savedData);
+                await writeData(savedData);
+                await updateGithubFile(savedData);
+                console.log("New month-object is created and saved. " + today);
             }
 
-
-            //regardless of whether a new object was created or not, a new object will be created in the allStats array
-            const day = String(today.getDate()).padStart(2, '0');
-
-            //adding the new day-object at the start of the allStats array
-            let monthlyStats = savedData.stats[0].allStats;
-            monthlyStats = [{ date: day, attacks: [], defences: [] }, ...monthlyStats];
-            savedData.stats[0].allStats = monthlyStats;
+            createDayObject(today, savedData);
             await writeData(savedData);
             await updateGithubFile(savedData);
             success = true;
             console.log("New day-object is created and saved. " + today);
-            console.log(savedData.stats[0]);
         }
         catch (error) {
             console.error("Feil oppstod: ", error)
