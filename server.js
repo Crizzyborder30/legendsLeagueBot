@@ -123,11 +123,16 @@ async function fetchData() {
 
 }
 
-//returns the current month and year on the from "2024-06"
-function getCurrentMonth() {
+//returns the next month and year on the from "2024-06"
+function getNextMonth() {
     const date = new Date();
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
+    let nextMonth = date.getMonth() + 2;
+    let year = date.getFullYear();
+    if (nextMonth === 13) {
+        year += 1;
+        nextMonth = 1;
+    };
+    const month = String(nextMonth).padStart(2, "0");
     return `${year}-${month}`;
 }
 
@@ -167,11 +172,11 @@ async function eachDay() {
                     //if a new season has begun, a new month/season object must be created. it should be the first in the json-array, for convenience. 
 
                     //the savedData array is expanded
-                    const currentMonth = getCurrentMonth();
-                    savedData.stats = [{ "month": currentMonth, "allStats": [] }, ...savedData.stats];
+                    const nextMonth = getNextMonth();
+                    savedData.stats = [{ "month": nextMonth, "allStats": [] }, ...savedData.stats];
 
                     //if a new season is starting, the thophies gets reset in LL so this line is to not get hundreds of minus the first day of the season
-                    savedData.oldTrophies = data.trophies;
+                    savedData.oldTrophies = 5000;
 
                     //the array containing the new object gets saved in the json file
                     await writeData(savedData);
