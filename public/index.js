@@ -2,7 +2,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     displayBasicPlayerData();
     createDropdown();
     const stats = await getDataFromJSON();
-    createAllTables(stats[0].allStats); 
+    createAllTables(stats[0].allStats);
 });
 
 //"June 2024"
@@ -22,7 +22,7 @@ async function displayBasicPlayerData() {
         }
         const data = await response.json();  // Konverter respons til JSON
         console.log(data);
-        document.getElementById("player-data").innerHTML = 
+        document.getElementById("player-data").innerHTML =
             "Player: " + data.name +
             "<br>Current trophies: " + data.trophies +
             "<br>Best trophies: " + data.bestTrophies +
@@ -35,14 +35,14 @@ async function displayBasicPlayerData() {
 
 //gonna run once the page opens aswell, gets the data from the json file by making a call to localhost/trophy-data
 //this data will be used to fill in the daily tables
-async function getDataFromJSON() {  
+async function getDataFromJSON() {
 
-    try{
+    try {
         const response = await fetch(`${window.location.origin}/trophy-data`);
         if (!response.ok) {
             throw new Error('Not able to get data from JSON');
         }
-        const data = await response.json();  
+        const data = await response.json();
         return data;
 
     } catch (error) {
@@ -74,14 +74,14 @@ dropDown.addEventListener('change', async (event) => {
 });
 
 
-async function createDropdown() {  
-        const stats = await getDataFromJSON();  
-        dropDown.innerHTML = '';
+async function createDropdown() {
+    const stats = await getDataFromJSON();
+    dropDown.innerHTML = '';
 
-        //for each month thats logged, an option in the dropdownmenu is created
-        stats.forEach(stat => {
-            dropDown.innerHTML += `<option value=${stat.month}> ${stat.month} </option>`
-        })
+    //for each month thats logged, an option in the dropdownmenu is created
+    stats.forEach(stat => {
+        dropDown.innerHTML += `<option value=${stat.month}> ${stat.month} </option>`
+    })
 }
 
 

@@ -184,7 +184,6 @@ async function eachDay() {
 
     while (!success) {
         try {
-            const data = await fetchData();
             const savedData = await readData();
 
             const today = new Date();
@@ -221,74 +220,71 @@ cron.schedule('0 5 * * *', () => {
 });
 
 
+function logAttack(difference, savedData) {
+    let todaysAttacks = savedData.stats[0].allStats[0].attacks;
+    //if the difference is over 40, there has been two attacks by the time the function has ran
+    if (difference > 40) {
+        const firstAttack = 40;
+        const secondAttack = difference - 40;
+        todaysAttacks = [...todaysAttacks, firstAttack, secondAttack];
+        savedData.stats[0].allStats[0].attacks = todaysAttacks;
+
+        console.log(`adding ${firstAttack} and ${secondAttack} to attack`);
+    }
+    else {
+        todaysAttacks = [...todaysAttacks, difference];
+        savedData.stats[0].allStats[0].attacks = todaysAttacks;
+
+        console.log(`adding ${difference} to attack`);
+    }
+}
+
+function logDefence(difference, savedData) {
+    let todaysDefences = savedData.stats[0].allStats[0].defences;
+    //if the difference is under -40, there has been two defeneces by the time the function has ran
+    if (difference < -40) {
+        const firstDefence = -40;
+        const secondDefence = difference + 40;
+        todaysDefences = [...todaysDefences, firstDefence, secondDefence];
+        savedData.stats[0].allStats[0].defences = todaysDefences;
+
+        console.log(`adding ${firstDefence} and ${secondDefence} to defence`);
+    }
+    else {
+        todaysDefences = [...todaysDefences, difference];
+        savedData.stats[0].allStats[0].defences = todaysDefences;
+
+        console.log(`adding ${difference} to defence`);
+    }
+}
+
+
+
 //code that runs every minute
 async function checkAndLogAttacksAndDefences() {
     try {
         const data = await fetchData();
-        const newTrophies = data.trophies; //string
-
-        //by the time this function runs the eachDay function should already have created a new object for this day
         const savedData = await readData();
-        const oldTrophies = savedData.oldTrophies; //string
 
-        //checking if the player is in legends league. if not
+        const newTrophies = data.trophies; 
+        const oldTrophies = savedData.oldTrophies; 
+        const difference = newTrophies - oldTrophies;
+        
+        savedData.oldTrophies = newTrophies;
+
         const playerLeague = data.league.name;
 
-        if (playerLeague === "Legend League") {
-            if (oldTrophies !== newTrophies) {
-
-                const difference = newTrophies - oldTrophies; //will be positive for attacks and negative for defences
-                savedData.oldTrophies = newTrophies;
-
-                //if the difference is positive, the player has attcked and the positive difference is pushed in the back of the list of attacks
-                if (difference > 0) {
-                    let todaysAttacks = savedData.stats[0].allStats[0].attacks;
-                    //if the difference is over 40, there has been two attacks by the time the function has ran
-                    if (difference > 40) {
-                        const firstAttack = 40;
-                        const secondAttack = difference - 40;
-                        todaysAttacks = [...todaysAttacks, firstAttack, secondAttack];
-                        savedData.stats[0].allStats[0].attacks = todaysAttacks;
-
-                        console.log(`adding ${firstAttack} and ${secondAttack} to attack`);
-                    }
-                    else {
-                        todaysAttacks = [...todaysAttacks, difference];
-                        savedData.stats[0].allStats[0].attacks = todaysAttacks;
-
-                        console.log(`adding ${difference} to attack`);
-                    }
-                }
-                //if the difference is negative, the player has recieved a defence and the negative difference is pushed in the back of the list of defences
-                if (difference < 0) {
-
-                    let todaysDefences = savedData.stats[0].allStats[0].defences;
-                    //if the difference is under -40, there has been two defeneces by the time the function has ran
-                    if (difference < -40) {
-                        const firstDefence = -40;
-                        const secondDefence = difference + 40;
-                        todaysDefences = [...todaysDefences, firstDefence, secondDefence];
-                        savedData.stats[0].allStats[0].defences = todaysDefences;
-
-                        console.log(`adding ${firstDefence} and ${secondDefence} to defence`);
-                    }
-                    else {
-                        todaysDefences = [...todaysDefences, difference];
-                        savedData.stats[0].allStats[0].defences = todaysDefences;
-
-                        console.log(`adding ${difference} to defence`);
-                    }
-                }
-
-                await writeData(savedData);
-                await updateGithubFile(savedData);
-
+        if (playerLeague === "Legend League" && difference !== 0) {
+            if (difference > 0) {
+                logAttack(difference, savedData);
             }
-        }
-        else {
-            console.log("Player is not in Legends League");
-        }
+            if (difference < 0) {
+                logDefence(difference, savedData);
+            }
 
+            await writeData(savedData);
+            await updateGithubFile(savedData);
+        }
     } catch (error) {
         console.error('Error:', error);
     }
