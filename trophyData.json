@@ -5,6 +5,11 @@
       "month": "2025-01",
       "allStats": [
         {
+          "date": "22",
+          "attacks": [],
+          "defences": []
+        },
+        {
           "date": "21",
           "attacks": [
             26,
