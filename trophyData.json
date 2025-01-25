@@ -1,5 +1,5 @@
 {
-  "oldTrophies": 5616,
+  "oldTrophies": 5586,
   "stats": [
     {
       "month": "2025-01",
@@ -8,7 +8,8 @@
           "date": "25",
           "attacks": [],
           "defences": [
-            -40
+            -40,
+            -30
           ]
         },
         {
