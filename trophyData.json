@@ -3,7 +3,13 @@
   "stats": [
     {
       "month": "2025-02",
-      "allStats": []
+      "allStats": [
+        {
+          "date": "27",
+          "attacks": [],
+          "defences": []
+        }
+      ]
     },
     {
       "month": "2025-01",
